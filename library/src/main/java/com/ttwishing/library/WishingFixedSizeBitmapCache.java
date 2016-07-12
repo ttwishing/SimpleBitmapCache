@@ -40,16 +40,16 @@ public class WishingFixedSizeBitmapCache extends BaseWishingFixedSizeBitmapCache
     //内存优化
     private Bitmap reusableBitmap;
 
-    private final Matrix matrix;
+    private final Matrix imageMatrix;
     private final ImageView.ScaleType scaleType;
 
-    public WishingFixedSizeBitmapCache(Context context, int width, int height, ImageView.ScaleType scaleType, Matrix matrix) {
+    public WishingFixedSizeBitmapCache(Context context, int width, int height, ImageView.ScaleType scaleType, Matrix imageMatrix) {
         super(context, "photo-" + width + "x" + height, width, height, Bitmap.Config.ARGB_8888, 40, 15, 200);
         this.context = context;
         this.paint = new Paint();
         this.paint.setFilterBitmap(true);
         this.scaleType = scaleType;
-        this.matrix = matrix;
+        this.imageMatrix = imageMatrix;
     }
 
     @Override
@@ -137,6 +137,7 @@ public class WishingFixedSizeBitmapCache extends BaseWishingFixedSizeBitmapCache
         int bottom = this.height;
 
         if (this.scaleType == ImageView.ScaleType.CENTER_CROP) {
+            //进行合理的
             this.srcRect.set(0, 0, bitmap.getWidth(), bitmap.getHeight());
             this.dstRect.set(left, top, right, bottom);
             float scale;
@@ -151,10 +152,9 @@ public class WishingFixedSizeBitmapCache extends BaseWishingFixedSizeBitmapCache
             int dy = (this.srcRect.height() - this.tempRect.height()) / 2;
             this.srcRect.inset(Math.abs(dx), Math.abs(dy));
             drawingCanvas.drawBitmap(bitmap, this.srcRect, this.dstRect, this.paint);
-
-        } else if (this.scaleType == ImageView.ScaleType.MATRIX && this.matrix != null) {
+        } else if (this.scaleType == ImageView.ScaleType.MATRIX && this.imageMatrix != null) {
             this.bitmapRectF.set(0.0F, 0.0F, bitmap.getWidth(), bitmap.getHeight());
-            this.matrix.mapRect(this.bitmapRectF);
+            this.imageMatrix.mapRect(this.bitmapRectF);
             this.bitmapRectF.offset(left, top);
             drawingCanvas.drawBitmap(bitmap, null, this.bitmapRectF, this.paint);
         } else {

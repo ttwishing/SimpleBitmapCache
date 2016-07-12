@@ -102,6 +102,8 @@ public class WishingFixedSizeBitmapCache extends BaseWishingFixedSizeBitmapCache
             }
 
             RefCountedBitmapDrawable refCountedBitmapDrawable = pool.get();
+
+            //此时先异步,在DrawingCanvas将bitmap绘制出来,在ui线程绘制时会更快速
             DrawingCanvas drawingCanvas = new DrawingCanvas(refCountedBitmapDrawable.getBitmap());
             customDraw(drawingCanvas, bitmap);
 

@@ -15,21 +15,28 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class PriorityExecutor<T extends PriorityExecutor.Item> {
 
     private static final int WRAPPER_POOL_LIMIT = 10;
+
+    //是否允许重复的任务
     private boolean allowDuplicateTasks = false;
+
     private final ComparePriority comparePriority;
+
     private final int corePoolSize;
     private ThreadPoolExecutor executor;
     private final int maximumPoolSize;
     PowerMode powerMode;
     private final PriorityBlockingQueue<Runnable> workQueue;
+
     private final Map<String, RunnableWrapper> runnableMap = new HashMap();
+
+    //对象池
     private final LinkedList<RunnableWrapper> wrapperPool = new LinkedList();
 
-    public PriorityExecutor(String name, int corePoolSize, int maximumPoolSize, int keepAliveTime, PowerMode powerMode, boolean paramBoolean) {
+    public PriorityExecutor(String name, int corePoolSize, int maximumPoolSize, int keepAliveTime, PowerMode powerMode, boolean allowDuplicateTasks) {
         this.corePoolSize = corePoolSize;
         this.maximumPoolSize = maximumPoolSize;
         this.comparePriority = new ComparePriority();
-        this.allowDuplicateTasks = paramBoolean;
+        this.allowDuplicateTasks = allowDuplicateTasks;
         this.workQueue = new PriorityBlockingQueue(300, this.comparePriority);
         this.powerMode = powerMode;
         int threadCount = powerModeToThreadCount(this.powerMode);
@@ -39,15 +46,18 @@ public class PriorityExecutor<T extends PriorityExecutor.Item> {
 
     public boolean execute(T t) {
         if (this.allowDuplicateTasks) {
+            //无验证任务是否有效
             this.executor.execute(getWrapper(t));
             return true;
         }
         RunnableWrapper runnableWrapper;
         synchronized (this.runnableMap) {
             runnableWrapper = this.runnableMap.get(t.getItemKey());
-            if (runnableWrapper != null) {//cond_2
-                if (this.comparePriority.compare((Runnable) t, (Runnable) runnableWrapper.wrapped) < 0) {//cond_1
-                    if (!runnableWrapper.canRun.getAndSet(false)) {//cond_2
+            if (runnableWrapper != null) {
+                //已存在,且新任务的优先级更高
+                if (this.comparePriority.compare((Runnable) t, (Runnable) runnableWrapper.wrapped) < 0) {
+                    //已存在的不可执行
+                    if (!runnableWrapper.canRun.getAndSet(false)) {
                         return false;
                     }
                 } else {
@@ -56,9 +66,10 @@ public class PriorityExecutor<T extends PriorityExecutor.Item> {
             }
             runnableWrapper = getWrapper(t);
             this.runnableMap.put(t.getItemKey(), runnableWrapper);
-            this.executor.execute(runnableWrapper);
-            return true;
         }
+
+        this.executor.execute(runnableWrapper);
+        return true;
     }
 
     private RunnableWrapper getWrapper(T t) {
@@ -66,7 +77,7 @@ public class PriorityExecutor<T extends PriorityExecutor.Item> {
             RunnableWrapper runnableWrapper = null;
             int size = this.wrapperPool.size();
             if (size > 0) {
-                runnableWrapper = (RunnableWrapper) this.wrapperPool.remove(-1 + this.wrapperPool.size());
+                runnableWrapper = this.wrapperPool.remove(-1 + this.wrapperPool.size());
             }
             if (runnableWrapper == null) {
                 runnableWrapper = new RunnableWrapper(t);
@@ -81,7 +92,6 @@ public class PriorityExecutor<T extends PriorityExecutor.Item> {
         switch (powerMode) {
             case ECONOMY:
                 return corePoolSize;
-
             case NORMAL:
                 return (this.corePoolSize + this.maximumPoolSize) / 2;
 
@@ -180,7 +190,7 @@ public class PriorityExecutor<T extends PriorityExecutor.Item> {
                 return;
             }
 
-            if (!allowDuplicateTasks) {//cond_2
+            if (!allowDuplicateTasks) {
                 synchronized (runnableMap) {
                     runnableMap.remove(getItemKey());
                 }
@@ -209,8 +219,8 @@ public class PriorityExecutor<T extends PriorityExecutor.Item> {
     }
 
     public enum PowerMode {
-        ECONOMY,
-        NORMAL,
-        SPEED;
+        ECONOMY,//经济
+        NORMAL,//正常
+        SPEED//快速
     }
 }

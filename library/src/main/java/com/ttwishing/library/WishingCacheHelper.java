@@ -193,18 +193,18 @@ public class WishingCacheHelper {
         }
 
         @Override
-        public void onHttpDiskCacheSuccess(String url, String paramString2, File file) {
+        public void onHttpDiskCacheSuccess(String url, String suffix, File file) {
             this.file = file;
             finish();
         }
 
         @Override
-        public void onHttpDiskCacheFailed(String url, String paramString2) {
+        public void onHttpDiskCacheFailed(String url, String suffix) {
             finish();
         }
 
         @Override
-        public boolean isProcessCheck(String paramString1, String paramString2) {
+        public boolean isProcessCheck(String String, String suffix) {
             if (this.countDownLatchRef.get() != null) {
                 if (this.processCheck.isProcessCheck(this.bitmapRequest)) {
                     return true;

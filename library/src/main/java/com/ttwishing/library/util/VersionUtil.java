@@ -41,9 +41,9 @@ public class VersionUtil {
         public final int versionCode;
         public final String versionName;
 
-        private Info(int paramInt, String paramString) {
-            this.versionCode = paramInt;
-            this.versionName = paramString;
+        private Info(int versionCode, String versionName) {
+            this.versionCode = versionCode;
+            this.versionName = versionName;
         }
     }
 

@@ -51,7 +51,7 @@ public class WishingBitmapMemoryCache {
             }
         };
 
-        this.mSoftBitmapLruCache = new LruCache<String, CachedBitmap>(8000) {
+        this.mSoftBitmapLruCache = new LruCache<String, CachedBitmap>(210 * 210 * 8 * 20) {
             @Override
             protected int sizeOf(String key, CachedBitmap value) {
                 return value.getByteCount();
@@ -120,6 +120,7 @@ public class WishingBitmapMemoryCache {
 
     /**
      * 构建url,可根据你的服务器情况而定
+     *
      * @param url
      * @param width
      * @param height

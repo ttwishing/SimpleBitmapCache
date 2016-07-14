@@ -11,6 +11,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by kurt on 10/28/15.
+ *
+ * 根据当前任务的需求,需要随时更改核心线程数
  */
 public class PriorityExecutor<T extends PriorityExecutor.Item> {
 

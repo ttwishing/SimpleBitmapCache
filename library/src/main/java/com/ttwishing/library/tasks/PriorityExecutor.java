@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by kurt on 10/28/15.
- *
+ * <p/>
  * 根据当前任务的需求,需要随时更改核心线程数
  */
 public class PriorityExecutor<T extends PriorityExecutor.Item> {
@@ -27,7 +27,6 @@ public class PriorityExecutor<T extends PriorityExecutor.Item> {
     private ThreadPoolExecutor executor;
     private final int maximumPoolSize;
     PowerMode powerMode;
-    private final PriorityBlockingQueue<Runnable> workQueue;
 
     private final Map<String, RunnableWrapper> runnableMap = new HashMap();
 
@@ -39,10 +38,11 @@ public class PriorityExecutor<T extends PriorityExecutor.Item> {
         this.maximumPoolSize = maximumPoolSize;
         this.comparePriority = new ComparePriority();
         this.allowDuplicateTasks = allowDuplicateTasks;
-        this.workQueue = new PriorityBlockingQueue(300, this.comparePriority);
         this.powerMode = powerMode;
         int threadCount = powerModeToThreadCount(this.powerMode);
-        this.executor = new ThreadPoolExecutor(threadCount, threadCount, keepAliveTime, TimeUnit.SECONDS, this.workQueue, new NamedThreadFactory(name));
+
+        PriorityBlockingQueue<Runnable> workQueue = new PriorityBlockingQueue(300, this.comparePriority);
+        this.executor = new ThreadPoolExecutor(threadCount, threadCount, keepAliveTime, TimeUnit.SECONDS, workQueue, new NamedThreadFactory(name));
         setPowerMode(powerMode);
     }
 
@@ -58,10 +58,11 @@ public class PriorityExecutor<T extends PriorityExecutor.Item> {
             if (runnableWrapper != null) {
                 //已存在,且新任务的优先级更高
                 if (this.comparePriority.compare((Runnable) t, (Runnable) runnableWrapper.wrapped) < 0) {
-                    //已存在的不可执行
+                    //已存在的设置为不可运行, 如果原有的就不可运行则不再添加
                     if (!runnableWrapper.canRun.getAndSet(false)) {
                         return false;
                     }
+
                 } else {
                     return false;
                 }
@@ -96,10 +97,8 @@ public class PriorityExecutor<T extends PriorityExecutor.Item> {
                 return corePoolSize;
             case NORMAL:
                 return (this.corePoolSize + this.maximumPoolSize) / 2;
-
             case SPEED:
                 return this.maximumPoolSize;
-
             default:
                 return 1;
         }
@@ -144,9 +143,9 @@ public class PriorityExecutor<T extends PriorityExecutor.Item> {
     }
 
     public interface Item {
-        public String getItemKey();
+        String getItemKey();
 
-        public long getItemPriority();
+        long getItemPriority();
     }
 
     public class ComparePriority implements Comparator<Runnable> {
@@ -166,6 +165,9 @@ public class PriorityExecutor<T extends PriorityExecutor.Item> {
         }
     }
 
+    /**
+     *
+     */
     public class RunnableWrapper implements Item, Runnable {
 
         AtomicBoolean canRun = new AtomicBoolean(true);

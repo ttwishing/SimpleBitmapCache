@@ -119,7 +119,7 @@ public abstract class VaryingSizeCappedBitmapCache extends BaseRgbBitmapCache<Va
 
         Canvas canvas = new Canvas(varyingSizeRefCountedBitmapDrawable.getBitmap());
 
-        //确认绘制的rect
+        //tmp的大小不一定是我们要显示的结果
         canvas.drawBitmap(tmpBitmap, new Rect(0, sizes[2], width, height - sizes[2]), new Rect(0, 0, sizes[0], sizes[1]), this.paint);
         externalDraw(canvas, sizes[0], sizes[1]);
 

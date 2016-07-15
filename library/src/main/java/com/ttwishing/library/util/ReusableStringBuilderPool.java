@@ -23,7 +23,7 @@ public class ReusableStringBuilderPool extends BaseObjectPool<ReusableStringBuil
         return new ReusableStringBuilder(50);
     }
 
-    public class ReusableStringBuilder extends Poolable {
+    public class ReusableStringBuilder extends BaseObjectPool.Poolable {
 
         protected StringBuilder builder;
 

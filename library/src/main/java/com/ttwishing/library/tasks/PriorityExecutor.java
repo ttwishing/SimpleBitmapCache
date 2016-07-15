@@ -166,7 +166,7 @@ public class PriorityExecutor<T extends PriorityExecutor.Item> {
     }
 
     /**
-     *
+     * 通过对象的适配器模式,对任务状态与执行进行操作
      */
     public class RunnableWrapper implements Item, Runnable {
 

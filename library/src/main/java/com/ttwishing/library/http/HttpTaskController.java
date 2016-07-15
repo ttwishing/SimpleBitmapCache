@@ -264,6 +264,7 @@ public class HttpTaskController {
             mDownloadLockPool.lock(url);
             try {
                 this.retryCount += 1;
+                //根据这个任务的预设优先级和等待时间来重置线程的执行
                 if (!highPriority) {
                     //非高的优先级,设置为经济模式
                     mDownloadExecutor.setPowerMode(PriorityExecutor.PowerMode.ECONOMY);

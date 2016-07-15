@@ -87,7 +87,7 @@ public class WishingFixedSizeBitmapCache extends BaseWishingFixedSizeBitmapCache
                 this.reusableBitmap.recycle();
                 this.reusableBitmap = Bitmap.createBitmap(options.outWidth, options.outHeight, Bitmap.Config.ARGB_8888);
             }else{
-                //reusableBitmap is usable
+                //reusableBitmap is reusable
             }
 
             options.inJustDecodeBounds = false;

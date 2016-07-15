@@ -30,8 +30,8 @@ public abstract class VaryingSizeCappedBitmapCache extends BaseRgbBitmapCache<Va
 
     private final Paint paint = new Paint();
 
-    private final int maxWidth;
-    private final int maxHeight;
+    private final int tmpWidth;
+    private final int tmpHeight;
     private boolean isEnabled;
 
     private Bitmap tmpLoadingBitmap;
@@ -45,8 +45,8 @@ public abstract class VaryingSizeCappedBitmapCache extends BaseRgbBitmapCache<Va
         //对Bitmap进行滤波处理
         this.paint.setFilterBitmap(true);
 
-        this.maxWidth = (int) (1.5D * width);
-        this.maxHeight = (int) (1.5D * height);
+        this.tmpWidth = (int) (1.5D * width);
+        this.tmpHeight = (int) (1.5D * height);
 
         this.isEnabled = true;
     }
@@ -141,25 +141,27 @@ public abstract class VaryingSizeCappedBitmapCache extends BaseRgbBitmapCache<Va
             return null;
         }
 
-        if (width > this.maxWidth || height > this.maxHeight) {
-            width = this.maxWidth;
-            height = this.maxHeight;
+        //图片真实大小 大于tmp设置的大小,则取tmp 的大小,后面会进行剪切操作
+        if (width > this.tmpWidth || height > this.tmpHeight) {
+            width = this.tmpWidth;
+            height = this.tmpHeight;
         }
 
         if (this.tmpLoadingBitmap != null) {
-
             //判断还有tmpLoadingBitmap是否可用
             if (this.tmpLoadingBitmap.getWidth() >= width && this.tmpLoadingBitmap.getHeight() >= height) {
                 return this.tmpLoadingBitmap;
             }
-            Log.e("VaryingSize", "renew tmp loading bitmap.");
+            //临时bitmap不可用
             this.tmpLoadingBitmap.recycle();
             this.tmpLoadingBitmap = null;
         }
+
         if (width < 1 || height < 1) {
             Log.e("VaryingSize", "getTmpLoadingBitmap has been called w/ 0 width or height");
             return null;
         }
+
         try {
             if (isEnabled) {
                 this.tmpLoadingBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);

@@ -49,7 +49,6 @@ public class HttpTaskController {
     //下载的文件保存路径
     private final File mDownloadCacheDir;
 
-
     private final ReusableStringBuilderPool mReusableStringBuilderPool;
 
     public HttpTaskController(ReusableStringBuilderPool stringBuilderPool) {

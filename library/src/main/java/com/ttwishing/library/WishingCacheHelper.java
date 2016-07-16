@@ -145,10 +145,13 @@ public class WishingCacheHelper {
         //每隔1秒查看下是否成功获取，走到达到最大次数waitCount(即超时),
         while (i < waitCount) {
             try {
+                //等待一秒种
                 countDownLatch.await(waitout, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
 
             }
+
+            //每次循环都要判断是否传递结束 || 或任务已中止
             if (countDownLatch.getCount() == 0L || !processCheck.isProcessCheck(bitmapRequest)) {
                 this.callback.onStop();
                 break;

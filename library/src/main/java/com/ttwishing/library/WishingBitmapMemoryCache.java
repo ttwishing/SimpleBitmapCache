@@ -28,7 +28,7 @@ public class WishingBitmapMemoryCache {
     //第一级,此中数据在某下情景下,移除后置入第二缓存
     private final LruCache<String, CachedBitmap> mBitmapLruCache;
     //第二级,GC回收敏感,适合大尺寸图片,此处的大尺寸定义为210*210
-    private final LruCache<String, CachedBitmap> mSoftBitmapLruCache;
+    private final LruCache<String, CachedBitmap> mWeakRefBitmapLruCache;
 
     final ReusableStringBuilderPool reusableStringBuilderPool;
 
@@ -46,12 +46,12 @@ public class WishingBitmapMemoryCache {
             protected void entryRemoved(boolean evicted, String key, CachedBitmap oldValue, CachedBitmap newValue) {
                 if ((evicted || newValue == null) && oldValue.getBitmap() != null) {
                     oldValue.bitmap = null;
-                    mSoftBitmapLruCache.put(key, newValue);
+                    mWeakRefBitmapLruCache.put(key, newValue);
                 }
             }
         };
 
-        this.mSoftBitmapLruCache = new LruCache<String, CachedBitmap>(210 * 210 * 8 * 20) {
+        this.mWeakRefBitmapLruCache = new LruCache<String, CachedBitmap>(210 * 210 * 8 * 20) {
             @Override
             protected int sizeOf(String key, CachedBitmap value) {
                 return value.getByteCount();
@@ -61,7 +61,7 @@ public class WishingBitmapMemoryCache {
 
     public void clearCache() {
         this.mBitmapLruCache.evictAll();
-        this.mSoftBitmapLruCache.evictAll();
+        this.mWeakRefBitmapLruCache.evictAll();
         System.gc();
     }
 
@@ -80,7 +80,7 @@ public class WishingBitmapMemoryCache {
             return cachedBitmap.getBitmap();
         }
 
-        cachedBitmap = this.mSoftBitmapLruCache.get(url);
+        cachedBitmap = this.mWeakRefBitmapLruCache.get(url);
 
         if (cachedBitmap != null) {
             this.num_soft_hit += 1;
@@ -108,7 +108,7 @@ public class WishingBitmapMemoryCache {
             if (cachedBitmap.size() > 44100) {
                 this.num_added_big += 1;
                 cachedBitmap.bitmap = null;
-                this.mSoftBitmapLruCache.put(url, cachedBitmap);
+                this.mWeakRefBitmapLruCache.put(url, cachedBitmap);
             } else {
                 this.num_added_small += 1;
                 this.mBitmapLruCache.put(url, cachedBitmap);

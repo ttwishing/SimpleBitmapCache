@@ -44,6 +44,7 @@ public class WishingBitmapMemoryCache {
 
             @Override
             protected void entryRemoved(boolean evicted, String key, CachedBitmap oldValue, CachedBitmap newValue) {
+                //(非清空 || 新值为空) && 老值不为空
                 if ((!evicted || newValue == null) && oldValue.getBitmap() != null) {
                     oldValue.bitmap = null;
                     mWeakRefBitmapLruCache.put(key, newValue);
